@@ -83,4 +83,4 @@ To run, follow these steps:
 
 
 
-
+Personal Contribution: worked on backend, api creation, and email otp verification and also debugging
