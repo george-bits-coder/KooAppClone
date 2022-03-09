@@ -1,9 +1,9 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import "./Comment.css";
 import { Picker } from "emoji-mart";
 import "emoji-mart/css/emoji-mart.css";
 import "./Modal.css";
+import "./Comment.css";
 import { UserContext } from "../../Context/UserContext";
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -24,27 +24,29 @@ function Comment() {
   const userId = localStorage.getItem("userid");
   const [isListening, setIsListening] = useState(false);
   const [userList, setUserList] = useState([]);
-
+  const [commentList, setCommentList] = useState([]);
   const { comment } = useContext(UserContext);
   useEffect(() => {
     getUserData();
   }, []);
 
   const getUserData = () => {
-    console.log(localStorage.getItem("postid"));
-    fetch(`https://kooappcloneapis.herokuapp.com/userid/post/`)
+    let postIdtoCom = localStorage.getItem("postid");
+    fetch(`https://kooappcloneapis.herokuapp.com/userid/post/${postIdtoCom}`)
       .then((res) => {
         return res.json();
       })
       .then((res) => {
         console.log(res);
         setUserList(res);
+        setCommentList(res.comments);
       })
       .catch((err) => {
         console.log(err);
       });
   };
   const sendPost = () => {
+    console.log(input);
     if (loading) return;
     setLoading(true);
 
@@ -52,27 +54,27 @@ function Comment() {
     if (userMail.length > 0) {
       console.log(selectedFile);
       const postData = {
-        postdata: input,
-        username: userList.name,
-        imageupload: selectedFile,
-        likes: 0,
-        commentNo: 0,
-        comments: "",
-        userid: userId,
+        commentNo: userList.commentNo + 1,
+        comments: [...userList.comments, input],
       };
       console.log(postData);
-      fetch("https://kooappcloneapis.herokuapp.com/userid/post", {
-        method: "POST",
-        body: JSON.stringify(postData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      let postIdtoCom = localStorage.getItem("postid");
+      fetch(
+        `https://kooappcloneapis.herokuapp.com/userid/post/${postIdtoCom}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(postData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
         .then((res) => {
           return res.json();
         })
         .then((res) => {
           console.log(res);
+          getUserData();
         })
         .catch((err) => {
           console.log(err);
@@ -161,15 +163,14 @@ function Comment() {
   } else {
     document.body.classList.remove("active-modal");
   }
-
-  const image = false;
   return (
     <div id="input_cont">
       <div
         id="inputCont"
         className="flex-grow bg-[#F8F7F3] sm:ml-[50px] xl:ml-[490px]"
+        style={{ marginTop: "-1px" }}
       >
-        <div id="cont1">
+        <div id="cont1" style={{ marginTop: "-15px" }}>
           <div id="insidecont1">
             <Link to={"/feed"}>
               <img
@@ -193,13 +194,12 @@ function Comment() {
             </button>
           </div>
         </div>
-
-        <div id="addPostToComment">
+        <div id="addPostToComment" style={{ marginTop: "-1px" }}>
           <div className="addPostToCommentcont1">
-            {image ? (
+            {userList.profile_pic ? (
               <img
                 className="addPostToCommentprofilepic"
-                src={image}
+                src={userList.profile_pic}
                 alt="postimg"
               />
             ) : (
@@ -211,16 +211,21 @@ function Comment() {
             )}
 
             <div>
-              <h1 className="addPostToCommentname">username</h1>
-              <h2 className="addPostToCommentusername">username</h2>
+              <h1 className="addPostToCommentname">{userList.name}</h1>
+              <h2 className="addPostToCommentusername">{userList.username}</h2>
             </div>
           </div>
           <div className="addPostToCommentcont2">
-            <h1>title</h1>
+            <h1>{userList.postdata}</h1>
           </div>
           <div className="addPostToCommentcont3">
-            {/* {image ? (
-              <img className="addPostToCommentprofilepic" src={image} alt="postimg" />
+            {userList.imageupload ? (
+              <img
+                className="addPostToCommentprofilepic"
+                src={userList.imageupload}
+                style={{ height: "270px" }}
+                alt="postimg"
+              />
             ) : (
               ""
               //   <img
@@ -228,21 +233,20 @@ function Comment() {
               //     src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzyALOcLp4ykOIC4bim8L0xZIvgfLLZEo-mg&usqp=CAU"
               //     alt="postimg"
               //   />
-            )} */}
+            )}
 
-            <img
+            {/* <img
               src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1MvKGlOE7ERr4LBkTnMLIJgHZE_1zewZHvw&usqp=CAU"
               alt="postedimg"
-            />
+            /> */}
           </div>
         </div>
-
-        <div id="cont3">
-          <input
-            style={{ padding: "10px" }}
+        <div id="cont3" style={{ padding: "10px", height: "110px" }}>
+          <textarea
+            style={{ padding: "10px", height: "55px" }}
             value={input}
             onChange={(e) => handleChange(e)}
-            className="input"
+            className="commentinput"
             type="text"
             placeholder="What's on your mind..."
           />
@@ -252,7 +256,6 @@ function Comment() {
             alt="speaker"
           />
         </div>
-
         <div id="inputcont4">
           <div onClick={() => filePickerRef.current.click()}>
             <input
@@ -340,6 +343,25 @@ function Comment() {
             </div>
           )}
         </div>
+        <h1
+          style={{
+            fontSize: "23px",
+            fontWeight: 600,
+            marginLeft: "50px",
+            fontFamily: "fantasy",
+          }}
+        >
+          Comments : {userList.commentNo}
+        </h1>
+        {commentList.map((e) => (
+          <div>
+            <h1
+              style={{ fontSize: "20px", fontWeight: 600, marginLeft: "50px" }}
+            >
+              {e}
+            </h1>
+          </div>
+        ))}
       </div>
     </div>
   );

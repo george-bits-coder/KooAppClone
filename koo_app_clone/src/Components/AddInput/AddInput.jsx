@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Addinput.css";
+import FileBase64 from "react-file-base64";
 import { Picker } from "emoji-mart";
 import "emoji-mart/css/emoji-mart.css";
 import "./Modal.css";
@@ -13,6 +14,7 @@ mic.interimResults = true;
 mic.lang = "en-US";
 function AddInput() {
   const [input, setInput] = useState("");
+  const [picprofile, setPicprofile] = useState("");
   const [loading, setLoading] = useState(false);
   const [length, setLength] = useState(0);
   const filePickerRef = useRef(null);
@@ -47,16 +49,18 @@ function AddInput() {
     if (userMail.length > 0) {
       console.log(selectedFile);
       const postData = {
+        profile_pic: userList.profile_pic,
         postdata: input,
-        username: userList.name,
-        imageupload: selectedFile,
+        name: userList.name,
+        username: userList.username,
+        imageupload: picprofile.imageupload,
         likes: 0,
         commentNo: 0,
         comments: "",
         userid: userId,
       };
       console.log(postData);
-      fetch("https://kooappcloneapis.herokuapp.com/userid/post", {
+      fetch(`https://kooappcloneapis.herokuapp.com/userid/post`, {
         method: "POST",
         body: JSON.stringify(postData),
         headers: {
@@ -221,7 +225,7 @@ function AddInput() {
           </p>
         </div>
         <div id="cont3">
-          <input
+          <textarea
             style={{ padding: "10px" }}
             value={input}
             onChange={(e) => handleChange(e)}
@@ -237,16 +241,19 @@ function AddInput() {
         </div>
 
         <div id="inputcont4">
-          <div onClick={() => filePickerRef.current.click()}>
-            <input
+          <div>
+            {/* <input
               type="file"
               ref={filePickerRef}
               hidden
               onChange={addImageToPost}
-            />
-            <img
-              src="https://www.kooapp.com/img/createMedia-img-new.svg"
-              alt="selectimg"
+            /> */}
+            <FileBase64
+              name="imageupload"
+              type="file"
+              multiple={false}
+              //hidden
+              onDone={({ base64 }) => setPicprofile({ imageupload: base64 })}
             />
           </div>
           <div onClick={() => filePickerRef.current.click()}>

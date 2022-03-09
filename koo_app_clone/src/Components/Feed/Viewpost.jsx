@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { UserContext } from "../../Context/UserContext";
+import Comment from "./Comment";
 import "./Viewpost.css";
 function Viewpost({
   profile_pic,
@@ -22,8 +23,10 @@ function Viewpost({
   return (
     <div className="maincont">
       <div className="cont1">
-        {image ? (
-          <img className="profilepic" src={image} alt="postimg" />
+        {image && profile_pic ? (
+          <img className="profilepic" src={profile_pic} alt="postimg" />
+        ) : profile_pic ? (
+          <img className="profilepic" src={profile_pic} alt="postimg" />
         ) : (
           <img
             className="profilepic"
@@ -31,9 +34,13 @@ function Viewpost({
             alt="postimg"
           />
         )}
-
         <div>
-          <h1 className="name">{username}</h1>
+          {name ? (
+            <h1 className="name">{name}</h1>
+          ) : (
+            <h1 className="name">{username}</h1>
+          )}
+          {/* <h1 className="name">{name}</h1> */}
           <h2 className="username">{username}</h2>
         </div>
       </div>
@@ -42,7 +49,7 @@ function Viewpost({
       </div>
       <div className="cont3">
         {image ? (
-          <img className="profilepic" src={image} alt="postimg" />
+          <img src={image} alt="postimg" />
         ) : (
           ""
           //   <img
@@ -51,11 +58,6 @@ function Viewpost({
           //     alt="postimg"
           //   />
         )}
-        {/* 
-        <img
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS1MvKGlOE7ERr4LBkTnMLIJgHZE_1zewZHvw&usqp=CAU"
-          alt="postedimg"
-        /> */}
       </div>
       <div className="cont4">
         <div>
@@ -99,8 +101,9 @@ function Viewpost({
           />
         </div>
       </div>
+      {/* <Comment /> */}
       <Link to="/comments">
-        <div className="cont5" onclick={() => handleComment(postid)}>
+        <div className="cont5" onClick={() => handleComment(postid)}>
           <img
             src="https://www.kooapp.com/img/profilePlaceholderYellow.svg"
             alt="comment"
